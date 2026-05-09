@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NutriNazorat — Sog'lom Ovqatlanish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --green-50: #e8f5f0;
+    --green-100: #c3e6d8;
+    --green-400: #2bb87a;
+    --green-600: #1a8f5c;
+    --green-800: #0d5c3a;
+    --green-900: #073d27;
+    --amber-50: #fff8ed;
+    --amber-400: #f59e0b;
+    --amber-600: #b45309;
+    --blue-50: #eff6ff;
+    --blue-400: #3b82f6;
+    --blue-600: #1d4ed8;
+    --red-400: #ef4444;
+    --red-50: #fef2f2;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --white: #ffffff;
+    --sidebar-w: 240px;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    min-height: 100vh;
+    display: flex;
+    font-size: 14px;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--white);
+    border-right: 1px solid var(--gray-200);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+
+  .sidebar-brand {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-icon {
+    width: 34px; height: 34px;
+    background: var(--green-400);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(43,184,122,0.35);
+  }
+
+  .brand-text { font-size: 15px; font-weight: 700; color: var(--gray-900); line-height: 1.2; }
+  .brand-sub  { font-size: 11px; color: var(--gray-400); font-weight: 400; }
+
+  .sidebar-nav { padding: 12px 10px; flex: 1; }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 8px 10px 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    color: var(--gray-500);
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .nav-item:hover { background: var(--gray-50); color: var(--gray-700); }
+  .nav-item.active { background: var(--green-50); color: var(--green-600); }
+  .nav-item.active .nav-icon { color: var(--green-600); }
+
+  .nav-icon { font-size: 17px; width: 20px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 14px 16px;
+    border-top: 1px solid var(--gray-100);
+    font-size: 12px;
+  }
+
+  .sidebar-kcal-label { color: var(--gray-400); margin-bottom: 4px; }
+  .sidebar-kcal-bar-wrap { background: var(--gray-100); border-radius: 100px; height: 5px; overflow: hidden; margin-bottom: 4px; }
+  .sidebar-kcal-bar { height: 100%; background: var(--green-400); border-radius: 100px; transition: width 0.4s; }
+  .sidebar-kcal-nums { color: var(--gray-500); }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0;
+    z-index: 50;
+  }
+
+  .topbar-title { font-size: 17px; font-weight: 700; color: var(--gray-900); }
+  .topbar-date  { font-size: 13px; color: var(--gray-400); }
+
+  .page-content { padding: 28px; display: none; }
+  .page-content.active { display: block; }
+
+  /* ── CARDS ── */
+  .cards-row { display: grid; gap: 14px; margin-bottom: 24px; }
+  .cards-row-4 { grid-template-columns: repeat(4, 1fr); }
+  .cards-row-3 { grid-template-columns: repeat(3, 1fr); }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .metric-card { padding: 16px 18px; }
+  .metric-icon {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .metric-label { font-size: 12px; color: var(--gray-400); font-weight: 500; margin-bottom: 3px; }
+  .metric-value { font-size: 26px; font-weight: 700; color: var(--gray-900); line-height: 1; }
+  .metric-unit  { font-size: 12px; color: var(--gray-400); margin-left: 3px; font-weight: 400; }
+
+  /* ── PROGRESS ── */
+  .prog-wrap { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+  .prog-item {}
+  .prog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .prog-label { font-size: 13px; font-weight: 500; color: var(--gray-700); }
+  .prog-nums  { font-size: 12px; color: var(--gray-400); }
+  .prog-bar-bg { background: var(--gray-100); border-radius: 100px; height: 8px; overflow: hidden; }
+  .prog-bar { height: 100%; border-radius: 100px; transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+
+  /* ── LOG LIST ── */
+  .log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-title { font-size: 15px; font-weight: 700; color: var(--gray-900); }
+
+  .log-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--gray-100);
+    gap: 10px;
+  }
+  .log-item:last-child { border-bottom: none; }
+
+  .log-emoji { font-size: 20px; flex-shrink: 0; }
+  .log-info { flex: 1; }
+  .log-name  { font-size: 13.5px; font-weight: 600; color: var(--gray-800); }
+  .log-grams { font-size: 11px; color: var(--gray-400); }
+  .log-macros-row { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+  .log-kcal  { font-size: 14px; font-weight: 700; color: var(--green-600); flex-shrink: 0; }
+  .log-del   {
+    background: none; border: none; cursor: pointer;
+    color: var(--gray-300); font-size: 18px; padding: 2px 6px;
+    border-radius: 6px; line-height: 1; transition: color 0.15s;
+    flex-shrink: 0;
+  }
+  .log-del:hover { color: var(--red-400); background: var(--red-50); }
+
+  .empty-state {
+    text-align: center;
+    padding: 36px 20px;
+    color: var(--gray-400);
+  }
+  .empty-state-icon { font-size: 36px; margin-bottom: 8px; }
+  .empty-link { color: var(--green-600); cursor: pointer; text-decoration: underline; font-size: 13px; }
+
+  /* ── FOOD SEARCH ── */
+  .search-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+  .search-input {
+    flex: 1;
+    height: 40px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 0 14px;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: var(--gray-800);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-input:focus { border-color: var(--green-400); box-shadow: 0 0 0 3px rgba(43,184,122,0.12); }
+  .portion-label { font-size: 12px; color: var(--gray-400); white-space: nowrap; }
+  .portion-input {
+    width: 76px;
+    height: 40px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 0 10px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--gray-800);
+    background: var(--white);
+    outline: none;
+    text-align: center;
+  }
+  .portion-input:focus { border-color: var(--green-400); }
+
+  .food-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+  .food-card {
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 13px 14px;
+    cursor: pointer;
+    transition: all 0.18s;
+    position: relative;
+  }
+  .food-card:hover { border-color: var(--green-400); box-shadow: 0 0 0 3px rgba(43,184,122,0.1); }
+  .food-card.selected {
+    border-color: var(--green-400);
+    background: var(--green-50);
+    box-shadow: 0 0 0 3px rgba(43,184,122,0.18);
+  }
+  .food-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 8px; right: 10px;
+    color: var(--green-600);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .food-emoji { font-size: 24px; margin-bottom: 6px; }
+  .food-name  { font-size: 12.5px; font-weight: 600; color: var(--gray-800); margin-bottom: 4px; line-height: 1.3; }
+  .food-kcal  { font-size: 14px; font-weight: 700; color: var(--green-600); }
+  .food-kcal-unit { font-size: 11px; font-weight: 400; color: var(--gray-400); }
+  .food-macros { font-size: 10.5px; color: var(--gray-400); margin-top: 4px; }
+  .food-macro-badge {
+    display: inline-block;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 10px;
+    margin-right: 2px;
+    font-weight: 500;
+  }
+
+  .add-food-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 18px;
+    padding: 14px 18px;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+  }
+  .add-food-label { flex: 1; font-size: 13px; color: var(--gray-400); }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    font-size: 13px; font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--green-400);
+    color: white;
+    box-shadow: 0 2px 8px rgba(43,184,122,0.3);
+  }
+  .btn-primary:hover { background: var(--green-600); }
+  .btn-primary:disabled { background: var(--gray-200); color: var(--gray-400); box-shadow: none; cursor: not-allowed; }
+
+  /* ── PROFILE ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--gray-500); }
+  .form-control {
+    height: 40px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 0 12px;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: var(--gray-800);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-control:focus { border-color: var(--green-400); box-shadow: 0 0 0 3px rgba(43,184,122,0.12); }
+
+  .result-banner {
+    display: none;
+    margin-top: 18px;
+    background: linear-gradient(135deg, var(--green-50), #f0fdf7);
+    border: 1.5px solid var(--green-100);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+  }
+  .result-banner.show { display: block; animation: slideIn 0.3s ease; }
+  @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .result-main { font-size: 32px; font-weight: 700; color: var(--green-800); margin: 4px 0; }
+  .result-sub  { font-size: 12.5px; color: var(--green-600); }
+  .tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 11.5px; font-weight: 500;
+  }
+  .tag-green { background: var(--green-50); color: var(--green-600); border: 1px solid var(--green-100); }
+  .tag-amber { background: var(--amber-50); color: var(--amber-600); border: 1px solid #fde68a; }
+  .tag-blue  { background: var(--blue-50);  color: var(--blue-600);  border: 1px solid #bfdbfe; }
+
+  /* ── SCHEMA / API ── */
+  .code-card {
+    background: var(--gray-900);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .code-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--green-400), #60efbc);
+  }
+  .code-title {
+    font-size: 11px; font-weight: 600;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .method-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 10.5px; font-weight: 700;
+    font-family: 'DM Mono', monospace;
+  }
+  .method-get    { background: #1d4ed820; color: #60a5fa; }
+  .method-post   { background: #15803d20; color: #4ade80; }
+  .method-put    { background: #92400e20; color: #fbbf24; }
+  .method-delete { background: #991b1b20; color: #f87171; }
+
+  pre {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.75;
+    color: #e2e8f0;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .kw   { color: #c084fc; }
+  .str  { color: #86efac; }
+  .num  { color: #fbbf24; }
+  .cmt  { color: #64748b; }
+  .fn   { color: #60a5fa; }
+  .obj  { color: #f9a8d4; }
+
+  /* ── CHART ── */
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 220px;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--gray-900);
+    color: white;
+    padding: 12px 18px;
+    border-radius: var(--radius);
+    font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: var(--shadow);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+    z-index: 999;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-icon { font-size: 16px; }
+
+  /* ── RESPONSIVE HELPERS ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .divider { height: 1px; background: var(--gray-100); margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">🥗</div>
+    <div>
+      <div class="brand-text">NutriNazorat</div>
+      <div class="brand-sub">Sog'lom ovqatlanish</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Asosiy</div>
+    <button class="nav-item active" onclick="showPage('dashboard', this)">
+      <span class="nav-icon">📊</span> Dashboard
+    </button>
+    <button class="nav-item" onclick="showPage('foods', this)">
+      <span class="nav-icon">🍽️</span> Taom qo'shish
+    </button>
+    <button class="nav-item" onclick="showPage('profile', this)">
+      <span class="nav-icon">👤</span> Profil & Hisob
+    </button>
+    <div class="nav-section-label" style="margin-top:10px;">Loyiha</div>
+    <button class="nav-item" onclick="showPage('schema', this)">
+      <span class="nav-icon">🗄️</span> DB Schema
+    </button>
+    <button class="nav-item" onclick="showPage('api', this)">
+      <span class="nav-icon">⚡</span> API Endpoints
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-kcal-label" id="sf-label">Bugungi kaloriya</div>
+    <div class="sidebar-kcal-bar-wrap">
+      <div class="sidebar-kcal-bar" id="sf-bar" style="width:0%"></div>
+    </div>
+    <div class="sidebar-kcal-nums" id="sf-nums">0 / 2000 kkal</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-date" id="topbar-date"></div>
+  </div>
+
+  <!-- DASHBOARD PAGE -->
+  <div class="page-content active" id="page-dashboard">
+    <div class="cards-row cards-row-4">
+      <div class="card metric-card">
+        <div class="metric-icon" style="background:#dcfce7">🔥</div>
+        <div class="metric-label">Iste'mol qilingan</div>
+        <div><span class="metric-value" id="m-consumed">0</span><span class="metric-unit">kkal</span></div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-icon" style="background:#dbeafe">🎯</div>
+        <div class="metric-label">Kunlik maqsad</div>
+        <div><span class="metric-value" id="m-goal">2000</span><span class="metric-unit">kkal</span></div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-icon" style="background:#fef9c3">⚡</div>
+        <div class="metric-label">Qoldi</div>
+        <div><span class="metric-value" id="m-remain">2000</span><span class="metric-unit">kkal</span></div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-icon" style="background:#fce7f3">💪</div>
+        <div class="metric-label">Jami oqsil</div>
+        <div><span class="metric-value" id="m-protein">0</span><span class="metric-unit">g</span></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="card" style="margin-bottom:20px;">
+          <div class="section-title" style="margin-bottom:16px;">Makroelementlar</div>
+          <div class="prog-wrap">
+            <div class="prog-item">
+              <div class="prog-header">
+                <span class="prog-label">🔥 Kaloriya</span>
+                <span class="prog-nums"><span id="p-kcal-cur">0</span> / <span id="p-kcal-goal">2000</span> kkal</span>
+              </div>
+              <div class="prog-bar-bg"><div class="prog-bar" id="bar-kcal" style="width:0%;background:var(--green-400)"></div></div>
+            </div>
+            <div class="prog-item">
+              <div class="prog-header">
+                <span class="prog-label">🥩 Oqsil (Protein)</span>
+                <span class="prog-nums"><span id="p-prot-cur">0</span> / <span id="p-prot-goal">50</span>g</span>
+              </div>
+              <div class="prog-bar-bg"><div class="prog-bar" id="bar-prot" style="width:0%;background:#3b82f6"></div></div>
+            </div>
+            <div class="prog-item">
+              <div class="prog-header">
+                <span class="prog-label">🥑 Yog' (Fat)</span>
+                <span class="prog-nums"><span id="p-fat-cur">0</span> / <span id="p-fat-goal">65</span>g</span>
+              </div>
+              <div class="prog-bar-bg"><div class="prog-bar" id="bar-fat" style="width:0%;background:#f59e0b"></div></div>
+            </div>
+            <div class="prog-item">
+              <div class="prog-header">
+                <span class="prog-label">🍞 Uglevod (Carbs)</span>
+                <span class="prog-nums"><span id="p-carb-cur">0</span> / <span id="p-carb-goal">250</span>g</span>
+              </div>
+              <div class="prog-bar-bg"><div class="prog-bar" id="bar-carb" style="width:0%;background:#d4537e"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title" style="margin-bottom:14px;">📉 Haftalik vazn grafigi</div>
+          <div class="chart-wrap">
+            <canvas id="weightChart" role="img" aria-label="Haftalik vazn o'zgarishi">Haftalik vazn: Du 75kg, Se 74.5, Ch 74.8, Pa 74.2, Ju 73.9, Sh 73.5, Ya 73.2</canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="log-header">
+          <div class="section-title">🍱 Bugungi ovqatlar</div>
+          <button class="btn btn-primary" onclick="showPage('foods', document.querySelector('[onclick=\"showPage(\'foods\', this)\"]'))">+ Qo'shish</button>
+        </div>
+        <div id="log-list">
+          <div class="empty-state">
+            <div class="empty-state-icon">🥣</div>
+            <div>Hali ovqat qo'shilmagan</div>
+            <div style="margin-top:8px;"><span class="empty-link" onclick="showPage('foods', document.querySelectorAll('.nav-item')[1])">Taom qo'shish →</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOODS PAGE -->
+  <div class="page-content" id="page-foods">
+    <div class="search-bar">
+      <input type="text" class="search-input" id="search-input" placeholder="🔍  Taom qidirish (masalan: palov, somsa...)" oninput="filterFoods()">
+      <span class="portion-label">Miqdor:</span>
+      <input type="number" class="portion-input" id="portion-g" value="100" min="10" max="2000"> <span style="font-size:12px;color:var(--gray-400)">g</span>
+    </div>
+
+    <div class="food-grid" id="food-grid"></div>
+
+    <div class="add-food-bar">
+      <div class="food-emoji" id="sel-emoji" style="font-size:22px">—</div>
+      <div class="add-food-label" id="sel-label">Avval yuqoridan taom tanlang</div>
+      <button class="btn btn-primary" id="add-btn" onclick="addFood()" disabled>➕ Ro'yxatga qo'shish</button>
+    </div>
+  </div>
+
+  <!-- PROFILE PAGE -->
+  <div class="page-content" id="page-profile">
+    <div class="two-col">
+      <div class="card">
+        <div class="section-title" style="margin-bottom:16px;">👤 Shaxsiy ma'lumotlar</div>
+        <div class="form-grid">
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Ism</label>
+            <input type="text" class="form-control" id="p-name" value="Alisher" placeholder="Ismingiz">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Yosh</label>
+            <input type="number" class="form-control" id="p-age" value="28">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Jins</label>
+            <select class="form-control" id="p-gender">
+              <option value="male">Erkak</option>
+              <option value="female">Ayol</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bo'y (sm)</label>
+            <input type="number" class="form-control" id="p-height" value="175">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vazn (kg)</label>
+            <input type="number" class="form-control" id="p-weight" value="75">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label class="form-label">Faollik darajasi</label>
+          <select class="form-control" id="p-activity">
+            <option value="1.2">Kam harakatli (o'troq)</option>
+            <option value="1.375">Oz faol (haftada 1–3 kun sport)</option>
+            <option value="1.55" selected>O'rtacha faol (3–5 kun)</option>
+            <option value="1.725">Juda faol (6–7 kun)</option>
+            <option value="1.9">Sportchi (2 marta/kun)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:18px;">
+          <label class="form-label">Maqsad</label>
+          <select class="form-control" id="p-goal">
+            <option value="-500">Vazn kamaytirish (−500 kkal)</option>
+            <option value="0" selected>Vaznni saqlash</option>
+            <option value="300">Oz vazn oshirish (+300 kkal)</option>
+            <option value="500">Vazn oshirish (+500 kkal)</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="calcBMR()">🧮 Kaloriya me'yorini hisoblash</button>
+
+        <div class="result-banner" id="bmr-result">
+          <div style="font-size:12px;color:var(--green-600);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Mifflin-St Jeor formulasi</div>
+          <div class="result-main" id="res-kcal">—</div>
+          <div class="result-sub" id="res-sub"></div>
+          <div class="tags-row" id="res-tags"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="section-title" style="margin-bottom:12px;">📐 Formula haqida</div>
+          <p style="font-size:13px;color:var(--gray-500);line-height:1.7;">
+            <strong style="color:var(--gray-700)">Mifflin-St Jeor</strong> formulasi — bugungi kunda eng aniq BMR (Basal Metabolik Darajasi) hisoblash usuli hisoblanadi.
+          </p>
+          <div class="divider"></div>
+          <div style="background:var(--gray-50);border-radius:var(--radius);padding:12px 14px;font-family:'DM Mono',monospace;font-size:12px;color:var(--gray-600);line-height:2;">
+            <div><strong>Erkak:</strong> (10×vazn) + (6.25×bo'y) − (5×yosh) + 5</div>
+            <div><strong>Ayol:</strong> (10×vazn) + (6.25×bo'y) − (5×yosh) − 161</div>
+            <div style="margin-top:6px;color:var(--gray-400)">TDEE = BMR × faollik koeffitsiyenti</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title" style="margin-bottom:12px;">💧 Suv me'yori</div>
+          <div style="font-size:13px;color:var(--gray-500);line-height:1.7;">
+            Kunlik suv: <strong style="color:var(--green-600)" id="water-rec">—</strong><br>
+            Hisoblash: <code style="font-size:11px;background:var(--gray-100);padding:2px 6px;border-radius:4px;">vazn × 0.033 litr</code>
+          </div>
+          <div class="divider"></div>
+          <div class="section-title" style="margin-bottom:12px;">⚖️ BMI</div>
+          <div style="font-size:13px;color:var(--gray-500);line-height:1.7;">
+            BMI: <strong style="color:var(--green-600)" id="bmi-rec">—</strong><br>
+            <span style="font-size:11px;">Normal: 18.5–24.9 | Ortiqcha: 25–29.9</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEMA PAGE -->
+  <div class="page-content" id="page-schema">
+    <div class="two-col">
+      <div>
+        <div class="code-card">
+          <div class="code-title">📄 User Schema — models/User.js</div>
+          <pre><span class="kw">const</span> UserSchema = <span class="kw">new</span> <span class="fn">Schema</span>({
+  name:     { type: <span class="obj">String</span>,  required: <span class="kw">true</span> },
+  email:    { type: <span class="obj">String</span>,  unique: <span class="kw">true</span> },
+  password: { type: <span class="obj">String</span>,  required: <span class="kw">true</span> },
+  age:      { type: <span class="obj">Number</span> },
+  height:   { type: <span class="obj">Number</span> },  <span class="cmt">// sm</span>
+  weight:   { type: <span class="obj">Number</span> },  <span class="cmt">// kg</span>
+  gender:   { type: <span class="obj">String</span>,
+    enum: [<span class="str">'male'</span>, <span class="str">'female'</span>] },
+  activity: { type: <span class="obj">Number</span>, default: <span class="num">1.55</span> },
+  goal:     { type: <span class="obj">Number</span>, default: <span class="num">0</span> },
+  dailyGoal:{ type: <span class="obj">Number</span>, default: <span class="num">2000</span> },
+  createdAt:{ type: <span class="obj">Date</span>,
+    default: Date.<span class="fn">now</span> }
+});</pre>
+        </div>
+
+        <div class="code-card">
+          <div class="code-title">🍱 Food Schema — models/Food.js</div>
+          <pre><span class="kw">const</span> FoodSchema = <span class="kw">new</span> <span class="fn">Schema</span>({
+  name:    { type: <span class="obj">String</span>, required: <span class="kw">true</span> },
+  nameUz:  { type: <span class="obj">String</span> },
+  category:{ type: <span class="obj">String</span> },
+  isLocal: { type: <span class="obj">Boolean</span>, default: <span class="kw">true</span> },
+  per100g: {
+    kcal:    <span class="obj">Number</span>,
+    protein: <span class="obj">Number</span>,
+    fat:     <span class="obj">Number</span>,
+    carbs:   <span class="obj">Number</span>
+  }
+});</pre>
+        </div>
+      </div>
+
+      <div>
+        <div class="code-card">
+          <div class="code-title">📋 DailyLog Schema — models/DailyLog.js</div>
+          <pre><span class="kw">const</span> EntrySchema = <span class="kw">new</span> <span class="fn">Schema</span>({
+  foodId:  { type: <span class="obj">ObjectId</span>, ref: <span class="str">'Food'</span> },
+  name:    <span class="obj">String</span>,
+  grams:   <span class="obj">Number</span>,
+  kcal:    <span class="obj">Number</span>,
+  protein: <span class="obj">Number</span>,
+  fat:     <span class="obj">Number</span>,
+  carbs:   <span class="obj">Number</span>
+});
+
+<span class="kw">const</span> DailyLogSchema = <span class="kw">new</span> <span class="fn">Schema</span>({
+  userId: { type: <span class="obj">ObjectId</span>,
+    ref: <span class="str">'User'</span>, required: <span class="kw">true</span> },
+  date:  { type: <span class="obj">String</span>, required: <span class="kw">true</span> },
+  <span class="cmt">// format: 'YYYY-MM-DD'</span>
+  foods: [EntrySchema],
+  totalKcal:    { type: <span class="obj">Number</span>, default: <span class="num">0</span> },
+  totalProtein: { type: <span class="obj">Number</span>, default: <span class="num">0</span> },
+  totalFat:     { type: <span class="obj">Number</span>, default: <span class="num">0</span> },
+  totalCarbs:   { type: <span class="obj">Number</span>, default: <span class="num">0</span> },
+  weight: { type: <span class="obj">Number</span> },
+  notes:  { type: <span class="obj">String</span> }
+});</pre>
+        </div>
+
+        <div class="code-card">
+          <div class="code-title">🔗 MongoDB ulanish — config/db.js</div>
+          <pre><span class="kw">const</span> mongoose = <span class="fn">require</span>(<span class="str">'mongoose'</span>);
+
+<span class="kw">const</span> <span class="fn">connectDB</span> = <span class="kw">async</span> () => {
+  <span class="kw">try</span> {
+    <span class="kw">await</span> mongoose.<span class="fn">connect</span>(
+      process.env.<span class="obj">MONGO_URI</span>
+    );
+    console.<span class="fn">log</span>(<span class="str">'MongoDB ulandi ✓'</span>);
+  } <span class="kw">catch</span> (err) {
+    console.<span class="fn">error</span>(err.message);
+    process.<span class="fn">exit</span>(<span class="num">1</span>);
+  }
+};
+
+module.exports = connectDB;</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API PAGE -->
+  <div class="page-content" id="page-api">
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="code-card">
+        <div class="code-title"><span class="method-badge method-post">POST</span> &nbsp; /api/log/add-food — Ovqat qo'shish</div>
+        <pre><span class="cmt">// Body: { userId, date, food: { foodId, grams } }</span>
+router.<span class="fn">post</span>(<span class="str">'/add-food'</span>, auth, <span class="kw">async</span> (req, res) => {
+  <span class="kw">const</span> { userId, date, food } = req.body;
+  <span class="kw">const</span> foodDoc = <span class="kw">await</span> Food.<span class="fn">findById</span>(food.foodId);
+  <span class="kw">const</span> ratio = food.grams / <span class="num">100</span>;
+
+  <span class="kw">const</span> entry = {
+    foodId:  food.foodId,
+    name:    foodDoc.name,
+    grams:   food.grams,
+    kcal:    Math.<span class="fn">round</span>(foodDoc.per100g.kcal    * ratio),
+    protein: <span class="fn">+(</span>foodDoc.per100g.protein * ratio).<span class="fn">toFixed</span>(<span class="num">1</span>),
+    fat:     <span class="fn">+(</span>foodDoc.per100g.fat     * ratio).<span class="fn">toFixed</span>(<span class="num">1</span>),
+    carbs:   <span class="fn">+(</span>foodDoc.per100g.carbs   * ratio).<span class="fn">toFixed</span>(<span class="num">1</span>),
+  };
+
+  <span class="kw">const</span> log = <span class="kw">await</span> DailyLog.<span class="fn">findOneAndUpdate</span>(
+    { userId, date },
+    { <span class="str">$push</span>: { foods: entry },
+      <span class="str">$inc</span>: { totalKcal: entry.kcal,
+               totalProtein: entry.protein,
+               totalFat: entry.fat,
+               totalCarbs: entry.carbs } },
+    { upsert: <span class="kw">true</span>, <span class="kw">new</span>: <span class="kw">true</span> }
+  );
+  res.<span class="fn">json</span>({ success: <span class="kw">true</span>, log });
+});</pre>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="code-card">
+          <div class="code-title"><span class="method-badge method-get">GET</span> &nbsp; /api/log/:userId/:date</div>
+          <pre>router.<span class="fn">get</span>(
+  <span class="str">'/:userId/:date'</span>, auth,
+  <span class="kw">async</span> (req, res) => {
+    <span class="kw">const</span> log = <span class="kw">await</span>
+      DailyLog.<span class="fn">findOne</span>({
+        userId: req.params.userId,
+        date:   req.params.date
+      });
+    res.<span class="fn">json</span>(log || {
+      foods: [],
+      totalKcal: <span class="num">0</span>
+    });
+});</pre>
+        </div>
+
+        <div class="code-card">
+          <div class="code-title"><span class="method-badge method-put">PUT</span> &nbsp; /api/user/profile</div>
+          <pre>router.<span class="fn">put</span>(
+  <span class="str">'/profile'</span>, auth,
+  <span class="kw">async</span> (req, res) => {
+    <span class="kw">const</span> { weight, height,
+      age, gender,
+      activity, goal } = req.body;
+
+    <span class="kw">let</span> bmr = gender === <span class="str">'male'</span>
+      ? (<span class="num">10</span>*weight) +
+        (<span class="num">6.25</span>*height) -
+        (<span class="num">5</span>*age) + <span class="num">5</span>
+      : (<span class="num">10</span>*weight) +
+        (<span class="num">6.25</span>*height) -
+        (<span class="num">5</span>*age) - <span class="num">161</span>;
+
+    <span class="kw">const</span> dailyGoal =
+      Math.<span class="fn">round</span>(bmr*activity)
+      + <span class="obj">Number</span>(goal);
+
+    <span class="kw">const</span> user = <span class="kw">await</span>
+      User.<span class="fn">findByIdAndUpdate</span>(
+        req.user.id,
+        { ...req.body, dailyGoal },
+        { <span class="kw">new</span>: <span class="kw">true</span> }
+      );
+    res.<span class="fn">json</span>({ user, dailyGoal });
+});</pre>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="code-card">
+          <div class="code-title"><span class="method-badge method-post">POST</span> &nbsp; /api/auth/register</div>
+          <pre>router.<span class="fn">post</span>(
+  <span class="str">'/register'</span>,
+  <span class="kw">async</span> (req, res) => {
+    <span class="kw">const</span> { name, email,
+      password } = req.body;
+    <span class="kw">const</span> hashed = <span class="kw">await</span>
+      bcrypt.<span class="fn">hash</span>(password, <span class="num">10</span>);
+    <span class="kw">const</span> user = <span class="kw">new</span> <span class="fn">User</span>({
+      name, email,
+      password: hashed
+    });
+    <span class="kw">await</span> user.<span class="fn">save</span>();
+    res.<span class="fn">json</span>({
+      token: <span class="fn">jwt.sign</span>(
+        { id: user._id },
+        process.env.<span class="obj">JWT_SECRET</span>)
+    });
+});</pre>
+        </div>
+
+        <div class="code-card">
+          <div class="code-title"><span class="method-badge method-delete">DEL</span> &nbsp; /api/log/remove-food</div>
+          <pre>router.<span class="fn">delete</span>(
+  <span class="str">'/remove-food'</span>, auth,
+  <span class="kw">async</span> (req, res) => {
+    <span class="kw">const</span> { userId, date,
+      entryId } = req.body;
+    <span class="kw">const</span> log = <span class="kw">await</span>
+      DailyLog.<span class="fn">findOneAndUpdate</span>(
+        { userId, date },
+        { <span class="str">$pull</span>: {
+          foods: { _id: entryId }
+        }},
+        { <span class="kw">new</span>: <span class="kw">true</span> }
+      );
+    <span class="cmt">// totalKcal ni qayta hisoblash</span>
+    log.totalKcal = log.foods
+      .<span class="fn">reduce</span>((s,f) =>
+        s + f.kcal, <span class="num">0</span>);
+    <span class="kw">await</span> log.<span class="fn">save</span>();
+    res.<span class="fn">json</span>({ success: <span class="kw">true</span> });
+});</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon">✅</span>
+  <span id="toast-msg">Qo'shildi!</span>
+</div>
+
+<script>
+/* ─── DATA ─── */
+const FOODS = [
+  { id:1,  name:"Osh palovi",       emoji:"🍚", kcal:280, protein:7,  fat:12, carbs:35 },
+  { id:2,  name:"Go'shtli somsa",   emoji:"🥟", kcal:240, protein:10, fat:14, carbs:20 },
+  { id:3,  name:"Chuchvara",        emoji:"🫕", kcal:185, protein:9,  fat:6,  carbs:24 },
+  { id:4,  name:"Mastava",          emoji:"🍲", kcal:115, protein:6,  fat:4,  carbs:14 },
+  { id:5,  name:"Lagman",           emoji:"🍜", kcal:145, protein:8,  fat:5,  carbs:18 },
+  { id:6,  name:"Sho'rva",          emoji:"🥣", kcal:90,  protein:5,  fat:4,  carbs:8  },
+  { id:7,  name:"Non (lepyoshka)",  emoji:"🫓", kcal:260, protein:8,  fat:2,  carbs:52 },
+  { id:8,  name:"Dimlama",          emoji:"🥘", kcal:130, protein:7,  fat:6,  carbs:12 },
+  { id:9,  name:"Manti",            emoji:"🥟", kcal:210, protein:9,  fat:10, carbs:22 },
+  { id:10, name:"Tandir kabob",     emoji:"🥩", kcal:195, protein:20, fat:11, carbs:2  },
+  { id:11, name:"Qozon kabob",      emoji:"🍖", kcal:220, protein:18, fat:14, carbs:4  },
+  { id:12, name:"Shashlik",         emoji:"🍡", kcal:200, protein:22, fat:12, carbs:0  },
+  { id:13, name:"Noodles (uyg'ur)", emoji:"🍝", kcal:160, protein:6,  fat:4,  carbs:26 },
+  { id:14, name:"Ko'kso'p",         emoji:"🥗", kcal:55,  protein:3,  fat:3,  carbs:5  },
+  { id:15, name:"Qovoqli palov",    emoji:"🎃", kcal:255, protein:5,  fat:10, carbs:38 },
+];
+
+let log = [];
+let selectedFood = null;
+let dailyGoal = 2000;
+let goalProt = 50, goalFat = 65, goalCarb = 250;
+
+/* ─── NAVIGATION ─── */
+const TITLES = {
+  dashboard: "Dashboard",
+  foods: "Taom qo'shish",
+  profile: "Profil & Kaloriya me'yori",
+  schema: "MongoDB Sxemalari",
+  api: "API Endpointlar"
+};
+
+function showPage(name, btn) {
+  document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('topbar-title').textContent = TITLES[name];
+  if (btn) btn.classList.add('active');
+}
+
+/* ─── DATE ─── */
+const d = new Date();
+document.getElementById('topbar-date').textContent =
+  d.toLocaleDateString('uz-UZ', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+/* ─── FOOD GRID ─── */
+function renderFoods(list) {
+  const grid = document.getElementById('food-grid');
+  grid.innerHTML = list.map(f => `
+    <div class="food-card${selectedFood && selectedFood.id === f.id ? ' selected' : ''}"
+         onclick="selectFood(${f.id})">
+      <div class="food-emoji">${f.emoji}</div>
+      <div class="food-name">${f.name}</div>
+      <div>
+        <span class="food-kcal">${f.kcal}</span>
+        <span class="food-kcal-unit"> kkal/100g</span>
+      </div>
+      <div class="food-macros">
+        <span class="food-macro-badge" style="background:#dbeafe;color:#1d4ed8">O: ${f.protein}g</span>
+        <span class="food-macro-badge" style="background:#fef9c3;color:#854d0e">Y: ${f.fat}g</span>
+        <span class="food-macro-badge" style="background:#fce7f3;color:#9d174d">U: ${f.carbs}g</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterFoods() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  renderFoods(FOODS.filter(f => f.name.toLowerCase().includes(q)));
+}
+
+function selectFood(id) {
+  selectedFood = FOODS.find(f => f.id === id);
+  document.getElementById('sel-emoji').textContent = selectedFood.emoji;
+  document.getElementById('sel-label').innerHTML =
+    `<strong>${selectedFood.name}</strong> tanlandi — miqdorni kiriting va qo'shing`;
+  document.getElementById('add-btn').disabled = false;
+  renderFoods(FOODS.filter(f =>
+    f.name.toLowerCase().includes(document.getElementById('search-input').value.toLowerCase())
+  ));
+}
+
+function addFood() {
+  if (!selectedFood) return;
+  const g = parseFloat(document.getElementById('portion-g').value) || 100;
+  const r = g / 100;
+  log.push({
+    name:    selectedFood.name,
+    emoji:   selectedFood.emoji,
+    grams:   g,
+    kcal:    Math.round(selectedFood.kcal    * r),
+    protein: +(selectedFood.protein * r).toFixed(1),
+    fat:     +(selectedFood.fat     * r).toFixed(1),
+    carbs:   +(selectedFood.carbs   * r).toFixed(1),
+  });
+  updateAll();
+  showToast('✅', `${selectedFood.emoji} ${selectedFood.name} qo'shildi!`);
+  selectedFood = null;
+  document.getElementById('sel-emoji').textContent = '—';
+  document.getElementById('sel-label').textContent = 'Avval yuqoridan taom tanlang';
+  document.getElementById('add-btn').disabled = true;
+  renderFoods(FOODS);
+  showPage('dashboard', document.querySelectorAll('.nav-item')[0]);
+}
+
+/* ─── LOG ─── */
+function removeFood(i) {
+  log.splice(i, 1);
+  updateAll();
+}
+
+function renderLog() {
+  const el = document.getElementById('log-list');
+  if (!log.length) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">🥣</div>
+      <div>Hali ovqat qo'shilmagan</div>
+      <div style="margin-top:8px;"><span class="empty-link" onclick="showPage('foods', document.querySelectorAll('.nav-item')[1])">Taom qo'shish →</span></div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = log.map((e, i) => `
+    <div class="log-item">
+      <div class="log-emoji">${e.emoji}</div>
+      <div class="log-info">
+        <div class="log-name">${e.name} <span class="log-grams">${e.grams}g</span></div>
+        <div class="log-macros-row">Oqsil: ${e.protein}g · Yog': ${e.fat}g · Uglevod: ${e.carbs}g</div>
+      </div>
+      <div class="log-kcal">${e.kcal} kkal</div>
+      <button class="log-del" onclick="removeFood(${i})" title="O'chirish">×</button>
+    </div>
+  `).join('');
+}
+
+/* ─── METRICS ─── */
+function updateAll() {
+  const totKcal = log.reduce((s,e) => s+e.kcal, 0);
+  const totProt = +log.reduce((s,e) => s+e.protein, 0).toFixed(1);
+  const totFat  = +log.reduce((s,e) => s+e.fat,     0).toFixed(1);
+  const totCarb = +log.reduce((s,e) => s+e.carbs,   0).toFixed(1);
+  const remain  = Math.max(0, dailyGoal - totKcal);
+  const pct     = Math.min(100, Math.round(totKcal / dailyGoal * 100));
+
+  document.getElementById('m-consumed').textContent = totKcal;
+  document.getElementById('m-goal').textContent     = dailyGoal;
+  document.getElementById('m-remain').textContent   = remain;
+  document.getElementById('m-protein').textContent  = totProt;
+
+  document.getElementById('p-kcal-cur').textContent  = totKcal;
+  document.getElementById('p-kcal-goal').textContent = dailyGoal;
+  document.getElementById('p-prot-cur').textContent  = totProt;
+  document.getElementById('p-fat-cur').textContent   = totFat;
+  document.getElementById('p-carb-cur').textContent  = totCarb;
+
+  const bar = document.getElementById('bar-kcal');
+  bar.style.width = pct + '%';
+  bar.style.background = pct > 100 ? '#ef4444' : pct > 80 ? '#f59e0b' : '#2bb87a';
+
+  document.getElementById('bar-prot').style.width = Math.min(100, Math.round(totProt/goalProt*100)) + '%';
+  document.getElementById('bar-fat').style.width  = Math.min(100, Math.round(totFat/goalFat*100)) + '%';
+  document.getElementById('bar-carb').style.width = Math.min(100, Math.round(totCarb/goalCarb*100)) + '%';
+
+  document.getElementById('sf-bar').style.width = pct + '%';
+  document.getElementById('sf-nums').textContent = totKcal + ' / ' + dailyGoal + ' kkal';
+
+  renderLog();
+}
+
+/* ─── PROFILE / BMR ─── */
+function calcBMR() {
+  const age    = +document.getElementById('p-age').value    || 25;
+  const height = +document.getElementById('p-height').value || 170;
+  const weight = +document.getElementById('p-weight').value || 70;
+  const gender = document.getElementById('p-gender').value;
+  const activ  = +document.getElementById('p-activity').value;
+  const goal   = +document.getElementById('p-goal').value;
+
+  let bmr = gender === 'male'
+    ? (10*weight) + (6.25*height) - (5*age) + 5
+    : (10*weight) + (6.25*height) - (5*age) - 161;
+  const tdee  = Math.round(bmr * activ);
+  const final = tdee + goal;
+
+  dailyGoal = final;
+  goalProt  = Math.round(weight * 1.6);
+  goalFat   = Math.round(weight * 0.85);
+  goalCarb  = Math.round((final * 0.45) / 4);
+
+  document.getElementById('p-prot-goal').textContent = goalProt;
+  document.getElementById('p-fat-goal').textContent  = goalFat;
+  document.getElementById('p-carb-goal').textContent = goalCarb;
+
+  document.getElementById('res-kcal').textContent = final + ' kkal/kun';
+  document.getElementById('res-sub').textContent  =
+    `BMR: ${Math.round(bmr)} kkal · TDEE: ${tdee} kkal · Maqsad: ${goal >= 0 ? '+' : ''}${goal} kkal`;
+
+  const bmi   = (weight / ((height/100)**2)).toFixed(1);
+  const water = (weight * 0.033).toFixed(1);
+
+  document.getElementById('bmi-rec').textContent   = bmi + ' kg/m²';
+  document.getElementById('water-rec').textContent = water + ' litr/kun';
+
+  const goalTxt = goal < 0 ? 'Vazn kamaytirish' : goal > 0 ? 'Vazn oshirish' : 'Saqlash';
+  document.getElementById('res-tags').innerHTML = `
+    <span class="tag tag-green">💪 Oqsil: ${goalProt}g</span>
+    <span class="tag tag-amber">🥑 Yog': ${goalFat}g</span>
+    <span class="tag tag-blue">🍞 Uglevod: ${goalCarb}g</span>
+    <span class="tag tag-green">💧 Suv: ${water}L</span>
+    <span class="tag ${bmi<18.5||bmi>=25 ? 'tag-amber':'tag-green'}">⚖️ BMI: ${bmi}</span>
+    <span class="tag tag-blue">🎯 ${goalTxt}</span>
+  `;
+  document.getElementById('bmr-result').classList.add('show');
+  updateAll();
+  showToast('🧮', `Kunlik me'yor: ${final} kkal hisoblandi!`);
+}
+
+/* ─── TOAST ─── */
+function showToast(icon, msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast-msg').textContent  = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ─── CHART ─── */
+new Chart(document.getElementById('weightChart'), {
+  type: 'line',
+  data: {
+    labels: ['Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba','Yakshanba'],
+    datasets: [{
+      label: 'Vazn (kg)',
+      data: [75.0, 74.5, 74.8, 74.2, 73.9, 73.5, 73.2],
+      borderColor: '#2bb87a',
+      backgroundColor: 'rgba(43,184,122,0.07)',
+      pointBackgroundColor: '#2bb87a',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 5,
+      tension: 0.4,
+      fill: true,
+      borderWidth: 2.5
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: {
+        min: 72, max: 76,
+        ticks: { font: { size: 11, family: 'Plus Jakarta Sans' }, callback: v => v + ' kg' },
+        grid: { color: 'rgba(0,0,0,0.05)' }
+      },
+      x: {
+        ticks: { font: { size: 10, family: 'Plus Jakarta Sans' }, maxRotation: 30 },
+        grid: { display: false }
+      }
+    }
+  }
+});
+
+/* ─── INIT ─── */
+renderFoods(FOODS);
+updateAll();
+</script>
+</body>
+</html>
